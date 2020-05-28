@@ -97,16 +97,21 @@ new_data = [(x, min(y, y+3*(y-fn(x)))) for x, y in data]
 with plot(7, 'Distribution of salaries at MegaHyperCo'):
     pyplot.scatter([x for x, y in new_data], [y for x, y in new_data], alpha=0.75, s=50, color='tab:blue')
 
+cns_adjs = []
+
 # Salary calibration to consistency
 with plot(8, 'Idealized salary calibration to bring the salaries to consistency at MegaHyperCo'):
     pyplot.scatter([x for x, y in new_data], [y for x, y in new_data], alpha=0.75, s=50, color='tab:blue')
     adjusted_data = []
     for x, y in new_data:
         min_y = max([y2 for x2, y2 in new_data if x2 <= x])
+        cns_adjs.append(max(y, min_y) - y)
         if min_y > y:
             pyplot.annotate(None, (x, y), (x, min_y), arrowprops=dict(arrowstyle='<|-', color='tab:red', shrinkA=0, shrinkB=0))
             adjusted_data.append((x, min_y))
     pyplot.scatter([x for x, y in adjusted_data], [y for x, y in adjusted_data], alpha=0.5, s=50, color='tab:cyan')
+
+mkt_adjs = []
 
 # Salary calibration to market/replacement
 with plot(9, 'Calibrating salaries against market rate and replacement cost is at MegaHyperCo'):
@@ -114,20 +119,25 @@ with plot(9, 'Calibrating salaries against market rate and replacement cost is a
     pyplot.fill_between(xs, fn_lo(xs), fn_hi(xs), linewidth=0, alpha=0.3, color='tab:purple')
     pyplot.annotate('market salary\nrange', (m, (fn_lo(m) + fn_hi(m))/2), ha='left', va='center', color='tab:purple')
     for x, y in new_data:
+        mkt_adjs.append(max(fn_lo(x), y) - y)
         if y < fn_lo(x):
             pyplot.annotate(None, (x, y), (x, fn_lo(x)), arrowprops=dict(arrowstyle='<|-', color='tab:red', shrinkA=0, shrinkB=0))
             pyplot.scatter([x], [fn_lo(x)], alpha=0.5, s=50, color='tab:cyan')
 
-# Salary calibration to consistency
-with plot(10, 'Idealized salary calibration to bring the salaries to consistency and market at MegaHyperCo'):
-    pyplot.scatter([x for x, y in new_data], [y for x, y in new_data], alpha=0.75, s=50, color='tab:blue')
-    pyplot.fill_between(xs, fn_lo(xs), fn_hi(xs), linewidth=0, alpha=0.3, color='tab:purple')
-    pyplot.annotate('market salary\nrange', (m, (fn_lo(m) + fn_hi(m))/2), ha='left', va='center', color='tab:purple')
-    adjusted_data = []
-    for x, y in new_data:
-        min_y = max([y2 for x2, y2 in new_data if x2 <= x])
-        new_y = max(min_y, fn_lo(x))
-        if new_y > y:
-            pyplot.annotate(None, (x, y), (x, new_y), arrowprops=dict(arrowstyle='<|-', color='tab:red', shrinkA=0, shrinkB=0))
-            adjusted_data.append((x, new_y))
-    pyplot.scatter([x for x, y in adjusted_data], [y for x, y in adjusted_data], alpha=0.5, s=50, color='tab:cyan')
+
+# Bar chart of raises
+order = sorted(range(len(cns_adjs)), key=lambda i: (cns_adjs[i] + mkt_adjs[i])/2, reverse=True)
+cns_adjs = [cns_adjs[i] for i in order]
+mkt_adjs = [mkt_adjs[i] for i in order]
+width = 0.35  # the width of the bars
+fig, ax = pyplot.subplots(figsize=(6, 3))
+x = numpy.arange(len(cns_adjs))
+rects1 = ax.bar(x - width/2, cns_adjs, width, label='Consistency-based adjustment', color='tab:pink')
+rects2 = ax.bar(x + width/2, mkt_adjs, width, label='Market-based adjustment', color='tab:cyan')
+ax.set_ylabel('Raise')
+ax.set_xlabel('Employee (sorted by raise)')
+ax.set_xticks(x + 1)
+ax.set_yticks([])
+ax.legend()
+fig.tight_layout()
+pyplot.savefig('figure-10.png', dpi=600)

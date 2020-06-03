@@ -32,4 +32,4 @@ for x, stage in [(0, 'Seed'), (0.25, 'Series A'), (0.5, 'Series B'), (1.0, 'IPO'
     pyplot.annotate(stage, (x, 3), ha='center', va='bottom')
 pyplot.figtext(0.5, 0.01, 'Figure 8: Employee perception of equity compensation', ha='center', style='italic') #, fontsize='small')
 pyplot.tight_layout()
-pyplot.savefig('equity-value.png', dpi=600)
+pyplot.savefig('equity-value.png', dpi=300)

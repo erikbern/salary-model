@@ -34,7 +34,7 @@ def plot(fignr, title):
     pyplot.gca().set_aspect('equal', adjustable='box')
     pyplot.figtext(0.5, 0.02, 'Figure %d: %s' % (fignr, title), ha='center', style='italic', fontsize='x-small')
     pyplot.tight_layout()
-    pyplot.savefig('figure-%d.png' % fignr, dpi=600)
+    pyplot.savefig('figure-%d.png' % fignr, dpi=300)
 
 # Base scatter
 with plot(1, 'Distribution of salaries at CrazyBananaCo'):
@@ -143,4 +143,4 @@ ax.set_xticks(x + 1)
 ax.set_yticks([])
 ax.legend()
 fig.tight_layout()
-pyplot.savefig('figure-10.png', dpi=600)
+pyplot.savefig('figure-10.png', dpi=300)

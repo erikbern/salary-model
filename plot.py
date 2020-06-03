@@ -9,9 +9,10 @@ m = 2500
 fn_0 = lambda x, alpha, beta: alpha*x**beta
 res = scipy.optimize.minimize(lambda args: sum((y - fn_0(x, *args))**2 for x, y in data), (0, 0))
 fn = lambda x: fn_0(x, *res.x)
-lo, hi = 0.9, 1.2
-fn_lo = lambda x: numpy.minimum(x, lo*fn(x))
-fn_hi = lambda x: numpy.minimum(x, hi*fn(x))
+lo1, hi1, hi2 = 0.9, 1.05, 1.3
+fn_lo1 = lambda x: numpy.minimum(x, lo1*fn(x))
+fn_hi1 = lambda x: numpy.minimum(x, hi1*fn(x))
+fn_hi2 = lambda x: numpy.minimum(x, hi2*fn(x))
 xs = numpy.linspace(0, m, 1000)
 
 @contextlib.contextmanager
@@ -42,12 +43,14 @@ with plot(1, 'Distribution of salaries at CrazyBananaCo'):
 # The market
 with plot(2, 'Salaries aligned with the market rate and replacement cost at CrazyBananaCo'):
     pyplot.scatter([x for x, y in data], [y for x, y in data], alpha=0.75, s=50, color='tab:blue')
-    pyplot.fill_between(xs, fn_lo(xs), fn_hi(xs), linewidth=0, alpha=0.3, color='tab:purple')
-    pyplot.annotate('market salary\nrange', (m, (fn_lo(m) + fn_hi(m))/2), ha='left', va='center', color='tab:purple')
-    pyplot.fill_between(xs, xs*0, fn_lo(xs), linewidth=0, alpha=0.3, color='tab:cyan')
-    pyplot.annotate('below\nmarket\nrate', (m, fn_lo(m)/2), ha='left', va='center', color='tab:cyan')
-    pyplot.fill_between(xs, fn_hi(xs), xs, linewidth=0, alpha=0.3, color='tab:red')
-    pyplot.annotate('above\nreplacement\ncost', (m, (m + fn_hi(m))/2), ha='left', va='center', color='tab:red')
+    pyplot.fill_between(xs, xs*0, fn_lo1(xs), linewidth=0, alpha=0.3, color='tab:cyan')
+    pyplot.annotate('below\nmarket\nrate', (m, fn_lo1(m)/2), ha='left', va='center', color='tab:cyan')
+    pyplot.fill_between(xs, fn_lo1(xs), fn_hi1(xs), linewidth=0, alpha=0.3, color='tab:blue')
+    pyplot.annotate('market salary\nrange', (m, (fn_lo1(m) + fn_hi1(m))/2), ha='left', va='center', color='tab:blue')
+    pyplot.fill_between(xs, fn_hi1(xs), fn_hi2(xs), linewidth=0, alpha=0.3, color='tab:purple')
+    pyplot.annotate('below\nreplacement\ncost', (m, (fn_hi1(m) + fn_hi2(m))/2), ha='left', va='center', color='tab:purple')
+    pyplot.fill_between(xs, fn_hi2(xs), xs, linewidth=0, alpha=0.3, color='tab:red')
+    pyplot.annotate('above\nreplacement\ncost', (m, (m + fn_hi2(m))/2), ha='left', va='center', color='tab:red')
     pyplot.fill_between(xs, xs, [m for x in xs], linewidth=0, alpha=0.5, color='tab:red')
     pyplot.annotate('negative value add', (m/2, m), ha='center', va='bottom', color='tab:red')
 
@@ -62,16 +65,16 @@ with plot(3, 'Distribution of salaries at SuperFairCo'):
 # New hire
 with plot(4, 'New potential candidate at SuperFairCo'):
     pyplot.scatter([x for x, y in cons_data], [y for x, y in cons_data], alpha=0.75, s=50, color='tab:blue')
-    new_x, new_y = 1600, 1200
-    pyplot.scatter([new_x], [new_y], color='tab:green', alpha=0.75)
-    pyplot.annotate('candidate', (new_x, new_y), ha='right', va='top', color='tab:green')
-    pyplot.plot([new_x, new_x], [new_y, new_x], color='tab:olive')
-    pyplot.annotate('value surplus', (new_x, new_x), ha='left', va='top', color='tab:olive')
+    new_x, new_y = 1500, 1200
+    pyplot.scatter([new_x], [new_y], color='tab:purple', alpha=0.75)
+    pyplot.annotate('candidate', (new_x, new_y), ha='right', va='top', color='tab:purple')
+    pyplot.plot([new_x, new_x], [new_y, new_x], color='tab:pink')
+    pyplot.annotate('value surplus', (new_x, new_x), ha='left', va='top', color='tab:pink')
 
 # New hire inconsistencies
 with plot(5, 'Inconsistency cost of hiring the new candidate at SuperFairCo'):
     pyplot.scatter([x for x, y in cons_data], [y for x, y in cons_data], alpha=0.75, s=50, color='tab:blue')
-    pyplot.scatter([new_x], [new_y], color='tab:green', alpha=0.75)
+    pyplot.scatter([new_x], [new_y], color='tab:purple', alpha=0.75)
     pyplot.plot([new_x, m], [new_y, new_y], color='black', linestyle=':')
     i_xs, i_ys = [], []
     for x2, y2 in cons_data:
@@ -87,9 +90,9 @@ with plot(6, 'Consistency-based salary range for the new hire at SuperFairCo'):
     pyplot.scatter([x for x, y in cons_data], [y for x, y in cons_data], alpha=0.75, s=50, color='tab:blue')
     min_y = max(y2 for x2, y2 in cons_data if x2 < new_x)
     max_y = min(y2 for x2, y2 in cons_data if x2 > new_x)
-    pyplot.scatter([new_x, new_x], [min_y, max_y], color='tab:green', alpha=0.75)
-    pyplot.plot([new_x, new_x], [min_y, max_y], color='tab:green', alpha=0.75)
-    pyplot.annotate('salary range', (new_x, (min_y+max_y)/2), ha='left', va='center', color='tab:green')
+    pyplot.scatter([new_x, new_x], [min_y, max_y], color='tab:purple', alpha=0.75)
+    pyplot.plot([new_x, new_x], [min_y, max_y], color='tab:purple', alpha=0.75)
+    pyplot.annotate('salary range', (new_x, max_y), ha='right', va='bottom', color='tab:purple')
 
 new_data = [(x, min(y, y+3*(y-fn(x)))) for x, y in data]
 
@@ -116,13 +119,13 @@ mkt_adjs = []
 # Salary calibration to market/replacement
 with plot(9, 'Calibrating salaries against market rate and replacement cost is at MegaHyperCo'):
     pyplot.scatter([x for x, y in new_data], [y for x, y in new_data], alpha=0.75, s=50, color='tab:blue')
-    pyplot.fill_between(xs, fn_lo(xs), fn_hi(xs), linewidth=0, alpha=0.3, color='tab:purple')
-    pyplot.annotate('market salary\nrange', (m, (fn_lo(m) + fn_hi(m))/2), ha='left', va='center', color='tab:purple')
+    pyplot.fill_between(xs, fn_lo1(xs), fn_hi1(xs), linewidth=0, alpha=0.3, color='tab:blue')
+    pyplot.annotate('market salary\nrange', (m, (fn_lo1(m) + fn_hi1(m))/2), ha='left', va='center', color='tab:blue')
     for x, y in new_data:
-        mkt_adjs.append(max(fn_lo(x), y) - y)
-        if y < fn_lo(x):
-            pyplot.annotate(None, (x, y), (x, fn_lo(x)), arrowprops=dict(arrowstyle='<|-', color='tab:red', shrinkA=0, shrinkB=0))
-            pyplot.scatter([x], [fn_lo(x)], alpha=0.5, s=50, color='tab:cyan')
+        mkt_adjs.append(max(fn_lo1(x), y) - y)
+        if y < fn_lo1(x):
+            pyplot.annotate(None, (x, y), (x, fn_lo1(x)), arrowprops=dict(arrowstyle='<|-', color='tab:red', shrinkA=0, shrinkB=0))
+            pyplot.scatter([x], [fn_lo1(x)], alpha=0.5, s=50, color='tab:cyan')
 
 
 # Bar chart of raises
